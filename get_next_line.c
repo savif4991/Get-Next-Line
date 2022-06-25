@@ -49,7 +49,7 @@ char	*get_more_byte(char *buf, int fd, unsigned int *new_line_idx)
 	while (i)
 		res[i] = buf[i--];
 	free (buf);
-	read(fd, res[total_size - BUFFER_SIZE], BUFFER_SIZE);
+	read(fd, &res[total_size - BUFFER_SIZE], BUFFER_SIZE);
 	i = seek_new_line(res, &flag);
 	if (flag)
 	{

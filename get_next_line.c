@@ -1,19 +1,39 @@
 #include "get_next_line.h"
 
-char	*get_res(unsigned int new_line_idx, unsigned int past_new_line_idx, char *buf)
+/*
+GNL Abstract
+1. 처음 함수 호출했을 때
+2. 두번째 이상 호출했을 때
+(호출한 시점의 상태)
+- rest_str에 그 전 호출에서 truncated된 문자열 존재, past_idx에 그 전 호출에서 찾은 개행문자 인덱스 존재 -
+1-1 : BUFFER_SIZE 범위에 개행 존재 O
+	idx 개행 문자 위치까지 증가
+	get_res
+2-2 : BUFFER_SIZE 범위에 개행 존재 X
+	idx BUFFER_SIZE만큼 증가
+	get_more_byte
+*/
+
+char	*get_res(unsigned int idx, unsigned int past_idx, char *buf, char *rest_str, unsigned int buf_call, unsigned int local_buf_call)
 {
 	char			*res;
 	unsigned int	i;
 	unsigned int	count;
+	unsigned int	size;
 
+	size = idx - past_idx;
 	count = 0;
-	i = new_line_idx - past_new_line_idx;
-	res = (char *)malloc(i);
+	i = 0;
+	res = (char *)malloc(size);
 	if (res == NULL)
 		return (NULL);
-	while (past_new_line_idx < new_line_idx)
-		res[count++] = buf[past_new_line_idx++];
-	free (buf);
+	while (count < size)
+	{
+		if (count < buf_call * BUFFER_SIZE - past_idx)
+			res[count] = rest_str[count++];
+		else
+			res[count++] = buf[i++];
+	}
 	return (res);
 }
 
@@ -34,56 +54,59 @@ unsigned int	seek_new_line(char *buf, unsigned int *flag)
 	return (i);
 }
 
-char	*get_more_byte(char *buf, int fd, unsigned int past_new_line_idx, unsigned int *new_line_idx)
+char	*malloc_more_byte(char *buf, unsigned int local_buf_call)
 {
-	char				*res;
-	unsigned int		total_size;
-	static unsigned int	count = 2;
-	unsigned int		i;
-	unsigned int		flag;
+	unsigned int	i;
+	char			*temp;
 
-	total_size = BUFFER_SIZE * count - past_new_line_idx;
-	i = total_size - BUFFER_SIZE - past_new_line_idx;
-	flag = 1;
-	res = (char *)malloc(total_size);
-	if (res == NULL)
+	i = 0;
+	temp = (char *)malloc(BUFFER_SIZE * (local_buf_call + 1));
+	if (temp == NULL)
 		return (NULL);
-	while (i)
-		res[i] = buf[i--];
+	while (i < BUFFER_SIZE)
+		temp[i] = buf[i++];
 	free (buf);
-	read(fd, &res[total_size - BUFFER_SIZE], BUFFER_SIZE);
-	i = seek_new_line(res, &flag);
-	if (flag)
-	{
-		*new_line_idx += i;
-		return (get_res(*new_line_idx, past_new_line_idx, res));
-	}
-	else
-	{
-		count++;
-		*new_line_idx += BUFFER_SIZE;
-		get_more_byte(res, fd, past_new_line_idx, new_line_idx);
-	}
+	return (temp);
 }
-//한 차례 GNL이 실행 된 후 가져간 개행문자까지는 좋음.
-//뒤의 나머지 문자열의 보존은? -> static char	*rest_str[];
+
 char	*get_next_line(int fd)
 {
 	char				*buf;
-	static unsigned int	new_line_idx = 0;
+	char				*res;
+	static unsigned int	idx = 0;
+	static unsigned int	buf_call = 0;
+	unsigned int		count;
 	unsigned int		flag;
-	unsigned int		past_new_line_idx;
-	static char			rest_str[BUFFER_SIZE]; //잘리고 난 나머지 저장..필요
+	unsigned int		past_idx;
+	unsigned int		local_buf_call;
+	static char			rest_str[BUFFER_SIZE] = {};
 
 	flag = 1;
 	buf = (char*)malloc(BUFFER_SIZE);
 	if (buf == 0)
 		return (NULL);
-	past_new_line_idx = new_line_idx;
-	read(fd, buf, BUFFER_SIZE);
-	new_line_idx += seek_new_line(buf, &flag);
-	if (flag)
-		return (get_res(new_line_idx, past_new_line_idx, buf));
-	else
-		return (get_more_byte(buf, fd, past_new_line_idx, &new_line_idx));
+	past_idx = idx;
+	local_buf_call = 0;
+	while (1)
+	{
+		read(fd, buf + local_buf_call * BUFFER_SIZE, BUFFER_SIZE);
+		local_buf_call++;
+		idx += seek_new_line(buf, &flag);
+		if (flag)
+		{
+			res = get_res(idx, past_idx, buf, rest_str, buf_call, local_buf_call);
+			count = 0;
+			while (BUFFER_SIZE * buf_call - (idx + count))
+				rest_str[count] = buf[idx + count++];
+			free (buf);
+			buf_call += local_buf_call;
+			return (res);
+		}
+		else
+		{
+			buf = malloc_more_byte(buf, local_buf_call);
+			if (buf == NULL)
+				return (NULL);
+		}
+	}
 }

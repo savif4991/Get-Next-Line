@@ -26,30 +26,27 @@ GNL Abstract
 	get_more_byte
 */
 
-char	*get_res(unsigned int idx, unsigned int past_idx, char *buf, char *rest_str, unsigned int buf_call, unsigned int local_buf_call)
+char	*get_ret(char *res_str, char *rest_str)
 {
-	char			*res;
 	unsigned int	i;
+	unsigned int	res_str_len;
 	unsigned int	count;
-	unsigned int	size;
+	char			*ret;
 
-	size = idx - past_idx;
-	count = 0;
-	i = 0;
-	res = (char *)malloc(size);
-	if (res == NULL)
+	res_str_len = ft_strlen(res_str);
+	i = seek_new_line(res_str);
+	ret = (char*)malloc(i);
+	if (!ret)
 		return (NULL);
-	while (count < size)
-	{
-		if (count < buf_call * BUFFER_SIZE - past_idx)
-			res[count] = rest_str[count++];
-		else
-			res[count++] = buf[i++];
-	}
-	return (res);
+	ft_strlcpy(ret, res_str, i);
+	count = 0;
+	while (i++ < res_str_len)
+		rest_str[count++] = res_str[i];
+	rest_str[count] = '\n';
+	return (ret);
 }
 
-unsigned int	seek_new_line(char *buf, unsigned int *flag)
+unsigned int	seek_new_line(char *buf)
 {
 	unsigned int	i;
 
@@ -58,67 +55,87 @@ unsigned int	seek_new_line(char *buf, unsigned int *flag)
 	{
 		i++;
 		if (!buf[i])
-		{
-			*flag = 0;
 			return (i);
-		}
 	}
 	return (i);
 }
 
-char	*malloc_more_byte(char *buf, unsigned int local_buf_call)
+char	*strjoin_free(char const *s1, char const *s2)
 {
-	unsigned int	i;
-	char			*temp;
+	int				i;
+	unsigned int	s1_len;
+	char			*res;
+
+	if (!s1 || !s2)
+		return (0);
+	s1_len = ft_strlen(s1);
+	res = (char *)malloc(sizeof(char) * (s1_len + ft_strlen(s2) + 1));
+	if (res == 0)
+		return (0);
+	i = 0;
+	while (s1[i])
+	{
+		res[i] = s1[i];
+		i++;
+	}
+	i = 0;
+	while (s2[i])
+	{
+		res[s1_len + i] = s2[i];
+		i++;
+	}
+	res[s1_len + i] = '\0';
+	//free(s2);
+	return (res);
+}
+
+char	*ft_strchr(const char *s, int c)
+{
+	unsigned int		i;
+	unsigned char		j;
 
 	i = 0;
-	temp = (char *)malloc(BUFFER_SIZE * (local_buf_call + 1));
-	if (temp == NULL)
-		return (NULL);
-	while (i < BUFFER_SIZE)
-		temp[i] = buf[i++];
-	free (buf);
-	return (temp);
+	j = (unsigned char)c;
+	if (j != '\0')
+	{
+		while (s[i])
+		{
+			if (s[i] == j)
+				return ((char *)&s[i]);
+			else
+				i++;
+		}
+	}
+	else
+	{
+		while (s[i])
+			i++;
+		return ((char *)&s[i]);
+	}
+	return (0);
 }
 
 char	*get_next_line(int fd)
 {
-	char				*buf;
-	char				*res;
-	static unsigned int	idx = 0;
-	static unsigned int	buf_call = 0;
-	unsigned int		count;
-	unsigned int		flag;
-	unsigned int		past_idx;
-	unsigned int		local_buf_call;
-	static char			rest_str[BUFFER_SIZE] = {};
+	char		*buf;
+	char		*res_str;
+	static char	*rest_str[BUFFER_SIZE] = {};
 
-	flag = 1;
 	buf = (char*)malloc(BUFFER_SIZE);
 	if (buf == 0)
 		return (NULL);
-	past_idx = idx;
-	local_buf_call = 0;
+	res_str = buf;
 	while (1)
 	{
-		read(fd, buf + local_buf_call * BUFFER_SIZE, BUFFER_SIZE);
-		local_buf_call++;
-		idx += seek_new_line(buf, &flag);
-		if (flag)
+		read(fd, buf, BUFFER_SIZE);
+		res_str = strjoin_free(res_str, buf);
+		if (!res_str)
+			return (NULL);
+		if (ft_strchr(res_str, '\n'))
 		{
-			res = get_res(idx, past_idx, buf, rest_str, buf_call, local_buf_call);
-			count = 0;
-			while (BUFFER_SIZE * buf_call - (idx + count))
-				rest_str[count] = buf[idx + count++];
 			free (buf);
-			buf_call += local_buf_call;
-			return (res);
-		}
-		else
-		{
-			buf = malloc_more_byte(buf, local_buf_call);
-			if (buf == NULL)
-				return (NULL);
+			res_str = get_ret(res_str, rest_str);
+			return (res_str);
 		}
 	}
 }

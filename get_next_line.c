@@ -25,7 +25,7 @@ static unsigned int	seek_new_line(char *buf)
 	return (i);
 }
 //OS에 따라 EOF값이 다른가?
-static char	*get_ret_no_nl(char *res_str)
+/*static char	*get_ret_no_nl(char *res_str)
 {
 	int	i;
 
@@ -34,7 +34,7 @@ static char	*get_ret_no_nl(char *res_str)
 		i++;
 	res_str[i] = '\0';
 	return (res_str);
-}
+}*/
 
 static char	*get_ret_nl(char *res_str)
 {
@@ -83,6 +83,6 @@ char	*get_next_line(int fd)
 			return (ret);
 		}
 		else if (ft_strlen(buf) != BUFFER_SIZE)
-			return (res_str[fd]);
+			return (res_str);
 	}
 }

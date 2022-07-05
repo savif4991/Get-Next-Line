@@ -9,7 +9,7 @@
 /*   Updated: 2022/06/28 15:04:52 by daejlee          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 unsigned int	ft_strlcpy(char *dst, const char *src, unsigned int size)
 {

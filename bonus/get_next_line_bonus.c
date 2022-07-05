@@ -9,7 +9,7 @@
 /*   Updated: 2022/06/28 15:04:32 by daejlee          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 static unsigned int	seek_new_line(char *buf)
 {
@@ -65,7 +65,7 @@ char	*get_next_line(int fd)
 {
 	char			*buf;
 	char			*ret;
-	static char		*res_str; //static char* 변수이므로, 함수가 다시 호출될 때 값을 그대로 가지고 있음.
+	static char		*res_str[256]; //static char* 변수이므로, 함수가 다시 호출될 때 값을 그대로 가지고 있음.
 
 	buf = (char *)malloc(BUFFER_SIZE);
 	if (!buf)
@@ -75,11 +75,11 @@ char	*get_next_line(int fd)
 		ft_memset(buf, 0, BUFFER_SIZE);
 		if (!read(fd, buf, BUFFER_SIZE))
 			return (NULL);
-		res_str = append_res(res_str, buf); //res_str의 끝에 이어 붙임
-		if (seek_new_line(res_str)) //res_str에 개행이 존재
+		res_str[fd] = append_res(res_str[fd], buf); //res_str의 끝에 이어 붙임
+		if (seek_new_line(res_str[fd])) //res_str에 개행이 존재
 		{
-			ret = get_ret_nl(res_str);
-			res_str = renew_res(res_str);
+			ret = get_ret_nl(res_str[fd]);
+			res_str[fd] = renew_res(res_str[fd]);
 			return (ret);
 		}
 		else if (ft_strlen(buf) != BUFFER_SIZE)

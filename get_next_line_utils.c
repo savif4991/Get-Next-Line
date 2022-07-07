@@ -39,48 +39,52 @@ unsigned int	ft_strlen(const char *s)
 	return (i);
 }
 
-void	*ft_memset(void *s, int c, size_t n)
+t_list	*ft_lstnew(void *content)
 {
-	size_t	i;
-	char	*p;
+	t_list	*ptr;
 
-	i = 0;
-	p = (char *)s;
-	while (i < n)
-	{
-		p[i] = (char)c;
-		i++;
-	}
-	return (s);
-}
-
-char	*append_res(char *res_str, char *buf)
-{
-	char	*ret;
-
-	if (!res_str)
-	{
-		ret = (char *)malloc(BUFFER_SIZE + 1);
-		if (!ret)
-			return (NULL);
-		ft_strlcpy(ret, buf, BUFFER_SIZE + 1);
-	}
-	else
-	{
-		ret = (char *)malloc(ft_strlen(res_str) + BUFFER_SIZE + 1);
-		if (!ret)
-			return (NULL);
-		ft_strlcpy(ret, res_str, ft_strlen(res_str) + 1);
-		ft_strlcpy(ret + ft_strlen(res_str), buf, BUFFER_SIZE + 1);
-		free (res_str);
-	}
-	return (ret);
-}
-
-int	ft_isascii(int c)
-{
-	if (c >= 0 && c <= 127)
-		return (1);
-	else
+	ptr = (t_list *)malloc(sizeof(t_list));
+	if (ptr == 0)
 		return (0);
+	ptr->content = content;
+	ptr->next = 0;
+	return (ptr);
+}
+
+void	*ft_lstclear(t_list **lst)
+{
+	t_list	*adr;
+	t_list	*temp;
+
+	adr = *lst;
+	temp = adr;
+	while (temp != 0)
+	{
+		adr = adr->next;
+		free (adr->content);
+		adr->next = 0;
+		free (lst);
+		temp = adr;
+	}
+	*lst = 0;
+	return (NULL);
+}
+
+void	ft_lstadd_back(t_list **lst, t_list *new)
+{
+	t_list	*adr;
+
+	adr = *lst;
+	if (new == 0)
+		return ;
+	if (adr == 0)
+	{
+		adr = new;
+		return ;
+	}
+	while (adr->next != 0)
+			adr = adr->next;
+	adr->next = new;
+	adr = adr->next;
+	adr->next = 0;
 }

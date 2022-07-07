@@ -13,16 +13,18 @@
 # define GET_NEXT_LINE_H
 # include <stdlib.h>
 # include <unistd.h>
-# ifndef BUFFER_SIZE
-# define BUFFER_SIZE 256
-#endif
+
+typedef struct s_list
+{
+	char			*content;
+	struct s_list	*next;
+}	t_list;
 
 unsigned int	ft_strlcpy(char *dst, const char *src, unsigned int size);
 unsigned int	ft_strlen(const char *s);
-void			*ft_memset(void *s, int c, size_t n);
-char			*append_res(char *res_str, char *buf);
+t_list			*ft_lstnew(void *content);
+void			*ft_lstclear(t_list **lst);
+void			ft_lstadd_back(t_list **lst, t_list *new);
 char			*get_next_line(int fd);
-int				ft_isascii(int c);
-
 
 #endif

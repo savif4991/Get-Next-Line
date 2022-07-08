@@ -39,52 +39,48 @@ unsigned int	ft_strlen(const char *s)
 	return (i);
 }
 
-t_list	*ft_lstnew(void *content)
+t_list	*ft_lstnew(int fd)
 {
 	t_list	*ptr;
 
 	ptr = (t_list *)malloc(sizeof(t_list));
 	if (ptr == 0)
 		return (0);
-	ptr->content = content;
+	ptr->fd = fd;
 	ptr->next = 0;
 	return (ptr);
 }
 
-void	*ft_lstclear(t_list **lst)
+void	*ft_lstdel(t_list **lst)
 {
-	t_list	*adr;
 	t_list	*temp;
 
-	adr = *lst;
-	temp = adr;
-	while (temp != 0)
-	{
-		adr = adr->next;
-		free (adr->content);
-		adr->next = 0;
-		free (lst);
-		temp = adr;
-	}
-	*lst = 0;
+	temp = *lst;
+	*lst = temp->next;
+	temp->fd = 0;
+	temp->next = 0;
+	free (temp->content);
+	free (temp->last_ret);
+	free (temp);
 	return (NULL);
 }
 
-void	ft_lstadd_back(t_list **lst, t_list *new)
+t_list	*ft_lstadd_back(t_list **lst, t_list *new)
 {
 	t_list	*adr;
 
 	adr = *lst;
-	if (new == 0)
-		return ;
-	if (adr == 0)
+	if (!new)
+		return (NULL);
+	if (!adr)
 	{
-		adr = new;
-		return ;
+		*lst = new;
+		return (new);
 	}
-	while (adr->next != 0)
+	while (adr->next)
 			adr = adr->next;
 	adr->next = new;
 	adr = adr->next;
 	adr->next = 0;
+	return (adr);
 }

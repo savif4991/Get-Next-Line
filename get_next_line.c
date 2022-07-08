@@ -82,13 +82,15 @@ static char	*get_ret(char *buf, t_list **s_list)
 	{
 		ret = (char *)malloc(nl_idx + 2);
 		if (!ret)
-			return (ft_lstclear(s_list));
+			return (ft_lstdel(s_list));
 		ft_strlcpy(ret, adr->content, nl_idx + 2);
 		temp = (char *)malloc(ft_strlen(adr->content) - nl_idx);
 		ft_strlcpy(temp, adr->content + nl_idx + 1,
 			ft_strlen(adr->content) - nl_idx);
 		free (adr->content);
+		free (adr->last_ret);
 		adr->content = temp;
+		adr->last_ret = ret;
 		return (ret);
 	}
 	else
@@ -99,23 +101,27 @@ char	*get_next_line(int fd)
 {
 	char			*buf;
 	static t_list	*s_list = NULL;
+	t_list			*temp;
 
 	buf = (char *)malloc(BUFFER_SIZE);
-	if (!buf || fd < 0 || !read(fd, buf, BUFFER_SIZE) || !buf[0])
+	temp = s_list;
+	while (temp && temp->fd != fd)
+		temp = temp->next;
+	if (!temp)
+		temp = ft_lstadd_back(&s_list, ft_lstnew(fd));
+	if (!buf || fd < 0 || !read(fd, buf, BUFFER_SIZE) || !buf[0] || !temp)
 	{
 		if (buf)
 			free (buf);
-		return (ft_lstclear(&s_list));
+		return (NULL);
 	}
-	if (!s_list)
-		s_list = ft_lstnew(NULL);
 	while (1)
 	{
-		s_list->content = append_res(s_list->content, buf);
-		if (!s_list->content)
-			return (ft_lstclear(&s_list));
+		temp->content = append_res(temp->content, buf);
+		if (!temp->content)
+			return (ft_lstdel(&s_list));
 		ft_memset(buf, 0, BUFFER_SIZE);
-		if (seek_new_line(s_list->content) || !read(fd, buf, BUFFER_SIZE))
-			return (get_ret(buf, &s_list));
+		if (seek_new_line(temp->content) || !read(fd, buf, BUFFER_SIZE))
+			return (get_ret(buf, &temp));
 	}
 }

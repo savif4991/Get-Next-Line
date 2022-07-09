@@ -48,6 +48,8 @@ t_list	*ft_lstnew(int fd)
 		return (0);
 	ptr->fd = fd;
 	ptr->next = 0;
+	ptr->content = 0;
+	ptr->last_ret = 0;
 	return (ptr);
 }
 
@@ -59,9 +61,12 @@ void	*ft_lstdel(t_list **lst)
 	*lst = temp->next;
 	temp->fd = 0;
 	temp->next = 0;
-	free (temp->content);
-	free (temp->last_ret);
-	free (temp);
+	if (temp->content)
+		free (temp->content);
+	if (temp->last_ret)
+		free (temp->last_ret);
+	if (temp)
+		free (temp);
 	return (NULL);
 }
 

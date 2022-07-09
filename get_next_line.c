@@ -65,7 +65,7 @@ static unsigned int	seek_new_line(char *buf)
 		if (!buf[i])
 			return (0);
 	}
-	return (i);
+	return (i + 1);
 }
 
 static char	*get_ret(char *buf, t_list **s_list)
@@ -80,15 +80,14 @@ static char	*get_ret(char *buf, t_list **s_list)
 	free (buf);
 	if (nl_idx)
 	{
-		ret = (char *)malloc(nl_idx + 2);
+		ret = (char *)malloc(nl_idx + 1);
 		if (!ret)
 			return (ft_lstdel(s_list));
-		ft_strlcpy(ret, adr->content, nl_idx + 2);
-		temp = (char *)malloc(ft_strlen(adr->content) - nl_idx);
-		ft_strlcpy(temp, adr->content + nl_idx + 1,
-			ft_strlen(adr->content) - nl_idx);
+		ft_strlcpy(ret, adr->content, nl_idx + 1);
+		temp = (char *)malloc(ft_strlen(adr->content) - nl_idx + 1);
+		ft_strlcpy(temp, adr->content + nl_idx,
+			ft_strlen(adr->content) - nl_idx + 1);
 		free (adr->content);
-		free (adr->last_ret);
 		adr->content = temp;
 		adr->last_ret = ret;
 		return (ret);
@@ -113,7 +112,7 @@ char	*get_next_line(int fd)
 	{
 		if (buf)
 			free (buf);
-		return (NULL);
+		return (ft_lstdel(&s_list));
 	}
 	while (1)
 	{

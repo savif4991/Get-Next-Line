@@ -14,113 +14,122 @@
 # define BUFFER_SIZE 256
 #endif
 
-static void	*ft_memset(void *s, int c, size_t n)
+char	*concat(char *str, char *buf)
 {
-	size_t	i;
-	char	*p;
+	char	*temp;
 
-	i = 0;
-	p = (char *)s;
-	while (i < n)
+	if (!str)
 	{
-		p[i] = (char)c;
-		i++;
-	}
-	return (s);
-}
-
-static char	*append_res(char *res_str, char *buf)
-{
-	char	*ret;
-
-	if (!res_str)
-	{
-		ret = (char *)malloc(BUFFER_SIZE + 1);
-		if (!ret)
+		temp = (char *)malloc(BUFFER_SIZE);
+		if (!temp)
 			return (NULL);
-		ft_strlcpy(ret, buf, BUFFER_SIZE + 1);
+		ft_memcpy(temp, buf, BUFFER_SIZE);
 	}
 	else
 	{
-		ret = (char *)malloc(ft_strlen(res_str) + BUFFER_SIZE + 1);
-		if (!ret)
+		temp = (char *)malloc(ft_strlen(str) + BUFFER_SIZE);
+		if (!temp)
 			return (NULL);
-		ft_strlcpy(ret, res_str, ft_strlen(res_str) + 1);
-		ft_strlcpy(ret + ft_strlen(res_str), buf, BUFFER_SIZE + 1);
-		free (res_str);
+		ft_memcpy(temp, str, ft_strlen(str));
+		ft_memcpy(temp + ft_strlen(str), buf, BUFFER_SIZE);
+		free (str);
 	}
-	return (ret);
+	return (temp);
 }
 
-static unsigned int	seek_new_line(char *buf)
+static int	seek_nl(char *buf)
 {
-	unsigned int	i;
+	int	i;
 
 	i = 0;
 	if (!buf)
-		return (0);
+		return (-1);
 	while (buf[i] != '\n')
 	{
 		i++;
 		if (!buf[i])
-			return (0);
+			return (-1);
 	}
-	return (i + 1);
+	return (i);
 }
 
-static char	*get_ret(char *buf, t_list **s_list)
+char	*get_ret_nl(t_list **p, char *buf)
 {
-	char			*ret;
-	char			*temp;
-	unsigned int	nl_idx;
-	t_list			*adr;
+	char	*ret;
+	t_list	*adr;
+	int		nl_idx;
+	char	*temp;
 
-	adr = *s_list;
-	nl_idx = seek_new_line(adr->content);
+	adr = *p;
+	nl_idx = seek_nl(adr->str);
 	free (buf);
-	if (nl_idx)
-	{
-		ret = (char *)malloc(nl_idx + 1);
-		if (!ret)
-			return (ft_lstdel(s_list));
-		ft_strlcpy(ret, adr->content, nl_idx + 1);
-		temp = (char *)malloc(ft_strlen(adr->content) - nl_idx + 1);
-		ft_strlcpy(temp, adr->content + nl_idx,
-			ft_strlen(adr->content) - nl_idx + 1);
-		free (adr->content);
-		adr->content = temp;
-		adr->last_ret = ret;
-		return (ret);
-	}
-	else
-		return (adr->content);
+	ret = (char *)malloc(nl_idx + 2);
+	temp = (char *)malloc(ft_strlen(adr->str) - nl_idx);
+	if (!ret || !temp)
+		return (ft_lstdel(p, buf));
+	ft_memcpy(ret, adr->str, nl_idx + 1);
+	ret[nl_idx + 2] = '\0';
+	ft_memcpy(temp, adr->str + nl_idx + 1, ft_strlen(adr->str) - nl_idx);
+	free (adr->str);
+	adr->str = temp;
+	if (adr->last_ret)
+		free (adr->last_ret);
+	adr->last_ret = ret;
+	return (ret);
+}
+
+char	*get_ret_nonl(t_list **p, char *buf)
+{
+	char	*ret;
+	t_list	*adr;
+
+	free (buf);
+	adr = *p;
+	ret = (char *)malloc(ft_strlen(adr->str));
+	if (!ret)
+		return (ft_lstdel(p, buf));
+	ft_memcpy(ret, adr->str, ft_strlen(adr->str));
+	adr->str[0] = '\0';
+	if (adr->last_ret)
+		free (adr->last_ret);
+	adr->last_ret = ret;
+	return (ret);
 }
 
 char	*get_next_line(int fd)
 {
-	char			*buf;
-	static t_list	*s_list = NULL;
+	static t_list	*p = NULL;
 	t_list			*temp;
+	char			*buf;
 
-	buf = (char *)malloc(BUFFER_SIZE);
-	temp = s_list;
-	while (temp && temp->fd != fd)
-		temp = temp->next;
-	if (!temp)
-		temp = ft_lstadd_back(&s_list, ft_lstnew(fd));
-	if (!buf || fd < 0 || !read(fd, buf, BUFFER_SIZE) || !buf[0] || !temp)
+	if (!p) //처음 호출했을 때
 	{
-		if (buf)
-			free (buf);
-		return (ft_lstdel(&s_list));
+		p = ft_lstnew(fd);
+		temp = p;
 	}
+	else //2번째 이상 호출했을 때
+	{
+		temp = p;
+		while (temp->next && temp->fd != fd) //input fd에 해당하는 스레드가 있는지 탐색
+			temp = temp->next;
+		if (!temp)
+			temp = ft_lstnew(fd);
+	}
+	//리스트 설정 끄읏
+	buf = (char *)malloc(BUFFER_SIZE);
+	if (fd < 0 || !buf || read(fd, buf, BUFFER_SIZE) == -1
+			|| (!buf[0] && temp->fst_call) || !temp)
+		return (ft_lstdel(&temp, buf));
+	//buf read, 널 체크 및 read 에러 처리 끗
 	while (1)
 	{
-		temp->content = append_res(temp->content, buf);
-		if (!temp->content)
-			return (ft_lstdel(&s_list));
-		ft_memset(buf, 0, BUFFER_SIZE);
-		if (seek_new_line(temp->content) || !read(fd, buf, BUFFER_SIZE))
-			return (get_ret(buf, &temp));
+		if (buf[0])
+			temp->str = concat(temp->str, buf);
+		if (seek_nl(temp->str) >= 0)
+			return (get_ret_nl(&temp, buf));
+		else if (!read(fd, buf, BUFFER_SIZE) && temp->str[0])
+			return (get_ret_nonl(&temp, buf));
+		else if (!temp->str[0])
+			return (ft_lstdel(&temp, buf));
 	}
 }

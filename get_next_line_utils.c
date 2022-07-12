@@ -11,22 +11,37 @@
 /* ************************************************************************** */
 #include "get_next_line.h"
 
-unsigned int	ft_strlcpy(char *dst, const char *src, unsigned int size)
+t_list	*ft_lstnew(int fd)
 {
-	unsigned int	i;
+	t_list	*ptr;
 
-	i = 0;
-	while ((i + 1 < size) && src[i])
-	{
-		dst[i] = src[i];
-		i++;
-	}
-	if (size != 0)
-		dst[i] = '\0';
-	i = 0;
-	while (src[i])
-		i++;
-	return (i);
+	ptr = (t_list *)malloc(sizeof(t_list));
+	if (ptr == 0)
+		return (0);
+	ptr->fd = fd;
+	ptr->next = NULL;
+	ptr->str = NULL;
+	ptr->fst_call = 1;
+	return (ptr);
+}
+
+void	*ft_lstdel(t_list **lst, char *buf)
+{
+	t_list	*temp;
+
+	temp = *lst;
+	*lst = temp->next;
+	temp->fd = 0;
+	temp->next = 0;
+	if (temp->last_ret)
+		free (temp->last_ret);
+	if (temp->str)
+		free (temp->str);
+	if (temp)
+		free (temp);
+	if (buf)
+		free (buf);
+	return (NULL);
 }
 
 unsigned int	ft_strlen(const char *s)
@@ -39,53 +54,21 @@ unsigned int	ft_strlen(const char *s)
 	return (i);
 }
 
-t_list	*ft_lstnew(int fd)
+void	*ft_memcpy(void *restrict dest, const void *restrict src, unsigned int n)
 {
-	t_list	*ptr;
+	unsigned int	i;
+	char			*temp_d;
+	char			*temp_s;
 
-	ptr = (t_list *)malloc(sizeof(t_list));
-	if (ptr == 0)
-		return (0);
-	ptr->fd = fd;
-	ptr->next = 0;
-	ptr->content = 0;
-	ptr->last_ret = 0;
-	return (ptr);
-}
-
-void	*ft_lstdel(t_list **lst)
-{
-	t_list	*temp;
-
-	temp = *lst;
-	*lst = temp->next;
-	temp->fd = 0;
-	temp->next = 0;
-	if (temp->content)
-		free (temp->content);
-	if (temp->last_ret)
-		free (temp->last_ret);
-	if (temp)
-		free (temp);
-	return (NULL);
-}
-
-t_list	*ft_lstadd_back(t_list **lst, t_list *new)
-{
-	t_list	*adr;
-
-	adr = *lst;
-	if (!new)
-		return (NULL);
-	if (!adr)
+	if (dest == 0 && src == 0)
+		return (dest);
+	i = 0;
+	temp_d = (char *)dest;
+	temp_s = (char *)src;
+	while (i < n)
 	{
-		*lst = new;
-		return (new);
+		temp_d[i] = temp_s[i];
+		i++;
 	}
-	while (adr->next)
-			adr = adr->next;
-	adr->next = new;
-	adr = adr->next;
-	adr->next = 0;
-	return (adr);
+	return (dest);
 }

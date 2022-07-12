@@ -16,17 +16,17 @@
 
 typedef struct s_list
 {
-	char			*content;
+	char			*str;
 	int				fd;
 	struct s_list	*next;
+	int				fst_call;
 	char			*last_ret;
 }	t_list;
 
-unsigned int	ft_strlcpy(char *dst, const char *src, unsigned int size);
-unsigned int	ft_strlen(const char *s);
 t_list			*ft_lstnew(int fd);
-void			*ft_lstdel(t_list **lst);
-t_list			*ft_lstadd_back(t_list **lst, t_list *new);
+void			*ft_lstdel(t_list **lst, char *buf);
+void			*ft_memcpy(void *restrict dest, const void *restrict src, unsigned int n);
+unsigned int	ft_strlen(const char *s);
 char			*get_next_line(int fd);
 
 #endif

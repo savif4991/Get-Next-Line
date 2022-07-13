@@ -9,7 +9,7 @@
 /*   Updated: 2022/06/28 15:04:52 by daejlee          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 #ifndef BUFFER_SIZE
 # define BUFFER_SIZE 256
 #endif

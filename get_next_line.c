@@ -45,7 +45,8 @@ static char	*get_ret_nl(t_list **targ_adr, char *buf, t_list **head_adr)
 	if (!ret || !temp)
 		return (ft_lstdel(targ_adr, buf, head_adr));
 	ft_strlcpy(ret, target->str, nl_idx + 2);
-	ft_strlcpy(temp, target->str + nl_idx + 1, ft_strlen(target->str) - nl_idx + 1);
+	ft_strlcpy(temp, target->str + nl_idx + 1,
+		ft_strlen(target->str) - nl_idx + 1);
 	free (target->str);
 	target->str = temp;
 	if (target->last_ret)
@@ -72,7 +73,8 @@ static char	*get_ret_nonl(t_list **targ_adr, char *buf, t_list **head_adr)
 	return (ret);
 }
 
-static char	*get_ret(int r_flag, t_list **targ_adr, char *buf, int fd, t_list **head_adr)
+static char	*get_ret(int r_flag, t_list **targ_adr,
+		char *buf, t_list **head_adr)
 {
 	t_list	*target;
 
@@ -80,14 +82,14 @@ static char	*get_ret(int r_flag, t_list **targ_adr, char *buf, int fd, t_list **
 	while (1)
 	{
 		if (r_flag == -1 || target->flag || (target->fst_call && !buf[0])
-				|| (!r_flag && !target->str[0]))
+			|| (!r_flag && !target->str[0]))
 			return (ft_lstdel(targ_adr, buf, head_adr));
 		else if (r_flag)
 			target->str = concat_buf(target->str, buf, r_flag);
 		target->fst_call = 0;
 		if (seek_nl(target->str) >= 0)
 			return (get_ret_nl(targ_adr, buf, head_adr));
-		r_flag = read(fd, buf, BUFFER_SIZE);
+		r_flag = read(target->fd, buf, BUFFER_SIZE);
 		if (!r_flag && target->str[0])
 			return (get_ret_nonl(targ_adr, buf, head_adr));
 	}
@@ -118,5 +120,5 @@ char	*get_next_line(int fd)
 			target = target->next;
 		}
 	}
-	return (get_ret(r_flag, &target, buf, fd, &head));
+	return (get_ret(r_flag, &target, buf, &head));
 }

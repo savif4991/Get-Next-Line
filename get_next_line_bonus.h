@@ -9,8 +9,8 @@
 /*   Updated: 2022/06/28 15:04:42 by daejlee          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
+#ifndef GET_NEXT_LINE_BONUS_H
+# define GET_NEXT_LINE_BONUS_H
 # include <stdlib.h>
 # include <unistd.h>
 
@@ -25,10 +25,10 @@ typedef struct s_list
 }	t_list;
 
 t_list			*ft_lstnew(int fd);
-void	*ft_lstdel(t_list **lst, char *buf, t_list **p_adr);
+void			*ft_lstdel(t_list **lst, char *buf, t_list **p_adr);
 unsigned int	ft_strlcpy(char *dst, const char *src, unsigned int size);
 unsigned int	ft_strlen(const char *s);
-char	*concat_buf(char *str, char *buf, int r_flag);
+char			*concat_buf(char *str, char *buf, int r_flag);
 char			*get_next_line(int fd);
 
 #endif

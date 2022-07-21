@@ -10,23 +10,20 @@
 /*                                                                            */
 /* ************************************************************************** */
 #include "get_next_line.h"
-#ifndef BUFFER_SIZE
-# define BUFFER_SIZE 256
-#endif
 
 t_list	*ft_lstnew(int fd)
 {
 	t_list	*ptr;
 
 	ptr = (t_list *)malloc(sizeof(t_list));
-	if (ptr == 0)
-		return (0);
+	if (!ptr)
+		return (NULL);
 	ptr->fd = fd;
 	ptr->next = NULL;
 	ptr->str = NULL;
 	ptr->last_ret = NULL;
 	ptr->fst_call = 1;
-	ptr->flag = 0;
+	ptr->eof_flag = 0;
 	return (ptr);
 }
 
@@ -36,17 +33,15 @@ void	*ft_lstdel(t_list **targ_adr, char *buf, t_list **head_adr)
 
 	if (buf)
 		free (buf);
-	if (!targ_adr)
+	if (!targ_adr || !head_adr || !*targ_adr || !*head_adr)
 		return (NULL);
 	target = *targ_adr;
-	if (target == *head_adr)
+	if (*targ_adr == *head_adr)
 		*head_adr = target->next;
 	else
 		*targ_adr = target->next;
 	target->fd = 0;
 	target->next = 0;
-	if (target->last_ret)
-		free (target->last_ret);
 	if (target->str)
 		free (target->str);
 	target->last_ret = NULL;

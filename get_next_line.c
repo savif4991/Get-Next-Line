@@ -10,9 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 #include "get_next_line.h"
-#ifndef BUFFER_SIZE
-# define BUFFER_SIZE 256
-#endif
+#include <unistd.h>
 
 static int	seek_nl(char *str)
 {
@@ -49,8 +47,6 @@ static char	*get_ret_nl(t_list **targ_adr, char *buf, t_list **head_adr)
 		ft_strlen(target->str) - nl_idx + 1);
 	free (target->str);
 	target->str = temp;
-	if (target->last_ret)
-		free (target->last_ret);
 	target->last_ret = ret;
 	return (ret);
 }
@@ -66,10 +62,8 @@ static char	*get_ret_nonl(t_list **targ_adr, char *buf, t_list **head_adr)
 	if (!ret)
 		return (ft_lstdel(targ_adr, buf, head_adr));
 	ft_strlcpy(ret, target->str, ft_strlen(target->str) + 1);
-	if (target->last_ret)
-		free (target->last_ret);
 	target->last_ret = ret;
-	target->flag = 1;
+	target->eof_flag = 1;
 	return (ret);
 }
 
@@ -78,10 +72,12 @@ static char	*get_ret(int r_flag, t_list **targ_adr,
 {
 	t_list	*target;
 
+	if (!*targ_adr || !*head_adr)
+		return (ft_lstdel(targ_adr, buf, head_adr));
 	target = *targ_adr;
 	while (1)
 	{
-		if (r_flag == -1 || target->flag || (target->fst_call && !buf[0])
+		if (r_flag == -1 || target->eof_flag || (target->fst_call && !buf[0])
 			|| (!r_flag && !target->str[0]))
 			return (ft_lstdel(targ_adr, buf, head_adr));
 		else if (r_flag)
@@ -105,7 +101,7 @@ char	*get_next_line(int fd)
 	buf = (char *)malloc(BUFFER_SIZE + 1);
 	r_flag = read(fd, buf, BUFFER_SIZE);
 	if (fd < 0 || !buf || r_flag == -1 || (!r_flag && !head))
-		return (ft_lstdel(NULL, buf, &head));
+		return (ft_lstdel(NULL, buf, NULL));
 	buf[r_flag] = '\0';
 	if (!head)
 		head = ft_lstnew(fd);

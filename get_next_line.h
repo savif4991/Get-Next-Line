@@ -12,7 +12,6 @@
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 # include <stdlib.h>
-# include <unistd.h>
 
 typedef struct s_list
 {
@@ -21,7 +20,7 @@ typedef struct s_list
 	struct s_list	*next;
 	int				fst_call;
 	char			*last_ret;
-	int				flag;
+	int				eof_flag;
 }	t_list;
 
 t_list			*ft_lstnew(int fd);

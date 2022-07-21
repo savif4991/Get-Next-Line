@@ -1,18 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.h                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daejlee <daejlee@student.42seoul.k>        +#+  +:+       +#+        */
+/*   By: daejlee <daejlee@student.42seoul.kr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/06/28 15:04:40 by daejlee           #+#    #+#             */
-/*   Updated: 2022/06/28 15:04:42 by daejlee          ###   ########.fr       */
+/*   Created: 2022/07/21 16:56:39 by daejlee           #+#    #+#             */
+/*   Updated: 2022/07/21 16:56:43 by daejlee          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef GET_NEXT_LINE_BONUS_H
 # define GET_NEXT_LINE_BONUS_H
 # include <stdlib.h>
-# include <unistd.h>
 
 typedef struct s_list
 {
@@ -21,7 +20,7 @@ typedef struct s_list
 	struct s_list	*next;
 	int				fst_call;
 	char			*last_ret;
-	int				flag;
+	int				eof_flag;
 }	t_list;
 
 t_list			*ft_lstnew(int fd);

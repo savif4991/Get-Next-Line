@@ -106,7 +106,7 @@ char	*get_next_line(int fd)
 	if (!head)
 		head = ft_lstnew(fd);
 	target = head;
-	if (!head->fst_call)
+	if (head && !head->fst_call)
 	{
 		while (target->fd != fd && target->next)
 			target = target->next;
